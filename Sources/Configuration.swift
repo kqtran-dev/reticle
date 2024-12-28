@@ -1,6 +1,5 @@
 import Foundation
 
-// Define structs for JSON configuration
 struct Configuration: Codable {
     struct Crosshair: Codable {
         struct Dot: Codable {
@@ -16,24 +15,45 @@ struct Configuration: Codable {
         let dot: Dot
     }
 
-    let crosshair: Crosshair
-}
-
-// Load JSON configuration
-func loadConfiguration(from path: String) -> Configuration? {
-    guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
-        print("Failed to load configuration file at \(path).")
-        return nil
+    struct Cursor: Codable {
+        let hide: Bool
     }
 
-    do {
-        let decoder = JSONDecoder()
-        let config = try decoder.decode(Configuration.self, from: data)
-        print("Configuration loaded successfully: \(config)")
-        return config
-    } catch {
-        print("Error decoding JSON configuration: \(error)")
-        return nil
+    let crosshair: Crosshair
+    let cursor: Cursor?
+
+    // Default configuration
+    static func defaultConfiguration() -> Configuration {
+        return Configuration(
+            crosshair: Crosshair(
+                length: 50,
+                thickness: 2,
+                color: [1.0, 0.0, 0.0, 1.0],
+                centerGap: 10,
+                dot: Crosshair.Dot(
+                    enabled: false,
+                    size: 5,
+                    color: [0.0, 0.0, 1.0, 1.0]
+                )
+            ),
+            cursor: Cursor(hide: false) // Default to not hiding the cursor
+        )
+    }
+
+    // Load JSON configuration
+    static func load(from path: String) -> Configuration? {
+        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
+            Logger.error("Failed to load configuration file at \(path).")
+            return nil
+        }
+
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(Configuration.self, from: data)
+        } catch {
+            Logger.error("Error decoding JSON configuration: \(error)")
+            return nil
+        }
     }
 }
 

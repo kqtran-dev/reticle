@@ -1,11 +1,14 @@
 {
+    "cusor": {
+        "hide": false
+    },
   "crosshair": {
     "length": 50,
     "thickness": 2,
     "color": [1.0, 0.0, 0.0, 1.0],
     "centerGap": 10,
     "dot": {
-      "enabled": true,
+      "enabled": false,
       "size": 4,
       "color": [0.0, 0.0, 1.0, 1.0]
     }
