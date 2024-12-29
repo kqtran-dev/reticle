@@ -57,6 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func loadConfiguration(from path: String) {
         if let newConfig = Configuration.load(from: path) {
             configuration = newConfig
+            StartupManager.configureStartup(enabled: newConfig.runOnStartup)
             crosshairView?.updateConfiguration(
                 crosshair: newConfig.crosshair,
                 onclick: newConfig.onclick
@@ -64,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Logger.info("Configuration updated.")
         } else {
             configuration = Configuration.defaultConfiguration()
+            StartupManager.configureStartup(enabled: Configuration.defaultConfiguration().runOnStartup)
             crosshairView?.updateConfiguration(
                 crosshair: Configuration.defaultConfiguration().crosshair,
                 onclick: Configuration.defaultConfiguration().onclick

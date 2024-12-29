@@ -25,7 +25,8 @@ struct Configuration: Codable {
         let duration: TimeInterval
         let fadeDuration: Int // in milliseconds
     }
-
+    
+    let runOnStartup: Bool
     let crosshair: Crosshair
     let cursor: Cursor?
     let onclick: OnClick?
@@ -33,6 +34,7 @@ struct Configuration: Codable {
     // Default configuration
     static func defaultConfiguration() -> Configuration {
         return Configuration(
+            runOnStartup: false,
             crosshair: Crosshair(
                 length: 50,
                 thickness: 2,
