@@ -10,9 +10,9 @@ class WindowFactory {
         )
         window.isOpaque = false
         window.backgroundColor = NSColor.clear
-        window.level = .screenSaver
+        window.level = .screenSaver  // Ensure it stays above other UI elements
         window.ignoresMouseEvents = true
-        window.collectionBehavior = .canJoinAllSpaces
+        window.collectionBehavior = [.canJoinAllSpaces, .ignoresCycle]
         window.makeKeyAndOrderFront(nil)
         return window
     }
