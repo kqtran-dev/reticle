@@ -3,7 +3,7 @@ import Cocoa
 class MenuBarIcon {
     private var statusItem: NSStatusItem!
 
-init() {
+    init() {
         setupMenuBarIcon()
     }
 

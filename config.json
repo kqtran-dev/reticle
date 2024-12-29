@@ -3,7 +3,7 @@
     "onclick": {
         "enabled": false,
         "size": 20,
-        "color": [0.0, 1.0, 0.0, 1.0],
+        "color": [0.0, 1.0, 1.0, 1.0],
         "fadeDuration": 250,
         "duration": 300,
     },

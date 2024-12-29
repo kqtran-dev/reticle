@@ -127,16 +127,29 @@ init(frame frameRect: NSRect, configuration: Configuration.Crosshair?, onclickCo
         setNeedsDisplay(bounds)  // Refresh view with new configuration
     }
 
-    func updatePosition(to globalPoint: CGPoint) {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(globalPoint) }) else {
-            Logger.error("Cursor is outside of known screen bounds.")
-            return
-        }
-
-        // Convert global point to the screen's local coordinate space
-        let localPoint = CGPoint(x: globalPoint.x, y: screen.frame.height - globalPoint.y)
-        crosshairPosition = localPoint
-        setNeedsDisplay(bounds)  // Trigger a redraw
+func updatePosition(to globalPoint: CGPoint) {
+    // Identify the screen containing the cursor
+    guard let screen = NSScreen.screens.first(where: { $0.frame.contains(globalPoint) }) else {
+        Logger.error("Cursor is outside of known screen bounds.")
+        return
     }
+
+    // Convert globalPoint to the local screen's coordinate space
+    let screenOrigin = screen.frame.origin
+    let localPoint = CGPoint(
+        x: globalPoint.x - screenOrigin.x,
+        y: globalPoint.y - screenOrigin.y
+    )
+
+    // Update crosshair position directly in the local coordinate space
+    crosshairPosition = localPoint
+    Logger.info("""
+        Cursor Position (Global): \(globalPoint)
+        Screen: \(screen.localizedName)
+        Screen Frame: \(screen.frame)
+        Local Position (Screen Relative): \(crosshairPosition)
+    """)
+    setNeedsDisplay(bounds)  // Trigger a redraw
+}
 }
 
