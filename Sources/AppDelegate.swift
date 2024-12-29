@@ -16,9 +16,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var crosshairView: CrosshairView!
     var configuration: Configuration?
     var fileWatcher = FileWatcher()
+    var menuBarIcon: MenuBarIcon?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let configPath = "config.json"
+        menuBarIcon = MenuBarIcon()
+        let configPath = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/reticle/config.json")
+        .path
         loadConfiguration(from: configPath)
 
         let screenFrame = NSScreen.main!.frame
@@ -27,7 +31,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window = WindowFactory.createTransparentWindow(frame: screenFrame)
 
         // Add crosshair view
-        crosshairView = CrosshairView(frame: screenFrame, configuration: configuration?.crosshair)
+        crosshairView = CrosshairView(
+            frame: screenFrame,
+            configuration: configuration?.crosshair,
+            onclickConfig: configuration?.onclick
+        )
+
+        // // Force an initial draw to ensure the crosshair appears immediately
+        // crosshairView.setNeedsDisplay(crosshairView.bounds)
+
         window.contentView?.addSubview(crosshairView)
 
         // Setup input handling
@@ -45,13 +57,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func loadConfiguration(from path: String) {
         if let newConfig = Configuration.load(from: path) {
             configuration = newConfig
-            crosshairView?.updateConfiguration(configuration: newConfig.crosshair)
+            crosshairView?.updateConfiguration(
+                crosshair: newConfig.crosshair,
+                onclick: newConfig.onclick
+            )
             Logger.info("Configuration updated.")
         } else {
             configuration = Configuration.defaultConfiguration()
-            crosshairView?.updateConfiguration(configuration: Configuration.defaultConfiguration().crosshair)
+            crosshairView?.updateConfiguration(
+                crosshair: Configuration.defaultConfiguration().crosshair,
+                onclick: Configuration.defaultConfiguration().onclick
+            )
             Logger.error("Invalid or missing configuration. Reverting to default configuration.")
-        }
-    }
+        }}
 }
 

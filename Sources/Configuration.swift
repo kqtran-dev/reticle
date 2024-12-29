@@ -14,13 +14,21 @@ struct Configuration: Codable {
         let centerGap: CGFloat
         let dot: Dot
     }
-
     struct Cursor: Codable {
         let hide: Bool
     }
 
+    struct OnClick: Codable {
+        let enabled: Bool
+        let size: CGFloat
+        let color: [CGFloat]
+        let duration: TimeInterval
+        let fadeDuration: Int // in milliseconds
+    }
+
     let crosshair: Crosshair
     let cursor: Cursor?
+    let onclick: OnClick?
 
     // Default configuration
     static func defaultConfiguration() -> Configuration {
@@ -28,15 +36,22 @@ struct Configuration: Codable {
             crosshair: Crosshair(
                 length: 50,
                 thickness: 2,
-                color: [1.0, 0.0, 0.0, 1.0],
+                color: [1.0, 1.0, 1.0, 1.0],
                 centerGap: 10,
                 dot: Crosshair.Dot(
                     enabled: false,
                     size: 5,
-                    color: [0.0, 0.0, 1.0, 1.0]
+                    color: [1.0, 1.0, 1.0, 1.0]
                 )
             ),
-            cursor: Cursor(hide: false) // Default to not hiding the cursor
+            cursor: Cursor(hide: false), // Default to not hiding the cursor
+            onclick: OnClick(
+                enabled: true,
+                size: 20,
+                color: [0.0, 1.0, 0.0, 1.0],
+                duration: 0.5,
+                fadeDuration: 250
+            )
         )
     }
 

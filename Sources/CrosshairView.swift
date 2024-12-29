@@ -2,8 +2,11 @@ import Cocoa
 class CrosshairView: NSView {
     var crosshairPosition: CGPoint = .zero
     var config: Configuration.Crosshair
+    private var clickPosition: CGPoint?
+    private var clickConfig: Configuration.OnClick?
+        private var dotAlpha: CGFloat = 1.0  // Track the current alpha value for fade-out
 
-    init(frame frameRect: NSRect, configuration: Configuration.Crosshair?) {
+init(frame frameRect: NSRect, configuration: Configuration.Crosshair?, onclickConfig: Configuration.OnClick?) {
         self.config = configuration ?? Configuration.Crosshair(
             length: 50,
             thickness: 2,
@@ -11,6 +14,7 @@ class CrosshairView: NSView {
             centerGap: 5,
             dot: Configuration.Crosshair.Dot(enabled: false, size: 0, color: [0.0, 0.0, 0.0, 0.0])
         )
+        self.clickConfig = onclickConfig
         super.init(frame: frameRect)
     }
 
@@ -18,71 +22,115 @@ class CrosshairView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
+override func draw(_ dirtyRect: NSRect) {
+    super.draw(dirtyRect)
 
-        // Clear view
-        NSColor.clear.set()
-        NSBezierPath.fill(bounds)
+    // Clear the view
+    NSColor.clear.set()
+    NSBezierPath.fill(bounds)
 
-        // Draw crosshair
-        let color = NSColor(
-            red: config.color[0],
-            green: config.color[1],
-            blue: config.color[2],
-            alpha: config.color[3]
-        )
-        color.set()
-        let path = NSBezierPath()
-        path.lineWidth = config.thickness
+    // Draw the crosshair
+    let color = NSColor(
+        red: config.color[0],
+        green: config.color[1],
+        blue: config.color[2],
+        alpha: config.color[3]
+    )
+    color.set()
+    let path = NSBezierPath()
+    path.lineWidth = config.thickness
 
-        let center = crosshairPosition
-        let gap = config.centerGap
-        let length = config.length
+    let center = crosshairPosition
+    let gap = config.centerGap
+    let length = config.length
 
-        // Horizontal line
-        path.move(to: CGPoint(x: center.x - length / 2, y: center.y))
-        path.line(to: CGPoint(x: center.x - gap / 2, y: center.y))
-        path.move(to: CGPoint(x: center.x + gap / 2, y: center.y))
-        path.line(to: CGPoint(x: center.x + length / 2, y: center.y))
+    // Horizontal line
+    path.move(to: CGPoint(x: center.x - length / 2, y: center.y))
+    path.line(to: CGPoint(x: center.x - gap / 2, y: center.y))
+    path.move(to: CGPoint(x: center.x + gap / 2, y: center.y))
+    path.line(to: CGPoint(x: center.x + length / 2, y: center.y))
 
-        // Vertical line
-        path.move(to: CGPoint(x: center.x, y: center.y - length / 2))
-        path.line(to: CGPoint(x: center.x, y: center.y - gap / 2))
-        path.move(to: CGPoint(x: center.x, y: center.y + gap / 2))
-        path.line(to: CGPoint(x: center.x, y: center.y + length / 2))
+    // Vertical line
+    path.move(to: CGPoint(x: center.x, y: center.y - length / 2))
+    path.line(to: CGPoint(x: center.x, y: center.y - gap / 2))
+    path.move(to: CGPoint(x: center.x, y: center.y + gap / 2))
+    path.line(to: CGPoint(x: center.x, y: center.y + length / 2))
 
-        path.stroke()
+    path.stroke()
 
-        // Draw center dot if enabled
-        if config.dot.enabled {
-            let dotColor = NSColor(
-                red: config.dot.color[0],
-                green: config.dot.color[1],
-                blue: config.dot.color[2],
-                alpha: config.dot.color[3]
-            )
-            dotColor.set()
-            let dotRect = CGRect(
-                x: center.x - config.dot.size / 2,
-                y: center.y - config.dot.size / 2,
-                width: config.dot.size,
-                height: config.dot.size
-            )
-            let dotPath = NSBezierPath(ovalIn: dotRect)
-            dotPath.fill()
+    // Draw the onclick visualization AFTER the crosshair
+if let clickPosition = clickPosition, let clickConfig = clickConfig, clickConfig.enabled {
+    let clickColor = NSColor(
+        red: clickConfig.color[0],
+        green: clickConfig.color[1],
+        blue: clickConfig.color[2],
+        alpha: clickConfig.color[3] * dotAlpha  // Apply fading alpha
+    )
+    clickColor.set()
+    let dotRect = CGRect(
+        x: clickPosition.x - clickConfig.size / 2,
+        y: clickPosition.y - clickConfig.size / 2,
+        width: clickConfig.size,
+        height: clickConfig.size
+    )
+    let dotPath = NSBezierPath(ovalIn: dotRect)
+    dotPath.fill()
+}
+}
+
+    func showClickVisualization(at point: CGPoint) {
+        Logger.info("showClickVisualization called at point: \(point)")
+
+        guard let clickConfig = clickConfig, clickConfig.enabled else {
+            return
+        }
+        Logger.info("Click visualization is enabled with size: \(clickConfig.size) and duration: \(clickConfig.duration)")
+
+        clickPosition = convert(point, from: nil)  // Convert global to local coordinates
+        dotAlpha = 1.0
+        setNeedsDisplay(bounds)  // Trigger a redraw
+
+            let fadeSteps = 10
+    let fadeInterval = (Double(clickConfig.fadeDuration) / Double(fadeSteps)) / 1000.0  // Convert milliseconds to seconds
+    let displayTime = clickConfig.duration / 1000.0  // Convert milliseconds to seconds
+
+    // If fadeDuration is 0, do not fade out
+    if clickConfig.fadeDuration > 0 {
+        DispatchQueue.main.asyncAfter(deadline: .now() + displayTime) {
+            var currentStep = 0
+            Timer.scheduledTimer(withTimeInterval: fadeInterval, repeats: true) { timer in
+                currentStep += 1
+                self.dotAlpha = max(0.0, 1.0 - CGFloat(currentStep) / CGFloat(fadeSteps))
+                self.setNeedsDisplay(self.bounds)
+
+                if currentStep >= fadeSteps {
+                    timer.invalidate()
+                    self.clickPosition = nil
+                    self.dotAlpha = 1.0  // Reset for future clicks
+                    self.setNeedsDisplay(self.bounds)
+                }
+            }
+        }
+    } else {
+        // If no fade-out, just hide after the duration
+        DispatchQueue.main.asyncAfter(deadline: .now() + displayTime) {
+            self.clickPosition = nil
+            self.setNeedsDisplay(self.bounds)
         }
     }
 
-    func updatePosition(to globalPoint: CGPoint) {
-        let localPoint = convert(globalPoint, from: nil)
-        crosshairPosition = localPoint
-        setNeedsDisplay(bounds)
     }
 
-    func updateConfiguration(configuration: Configuration.Crosshair) {
-        self.config = configuration
+    func updateConfiguration(crosshair: Configuration.Crosshair, onclick: Configuration.OnClick?) {
+        self.config = crosshair
+        self.clickConfig = onclick
         setNeedsDisplay(bounds)  // Refresh view with new configuration
+    }
+    func updatePosition(to globalPoint: CGPoint) {
+        // Convert the global point to the window's local coordinates
+        let localPoint = convert(globalPoint, from: nil) // Automatically accounts for coordinate flipping
+        crosshairPosition = localPoint
+        setNeedsDisplay(bounds)  // Refresh the view
     }
 }
 

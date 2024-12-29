@@ -1,6 +1,13 @@
 {
-    "cusor": {
-        "hide": false
+  "onclick": {
+    "enabled": false,
+    "size": 20,
+    "color": [0.0, 1.0, 0.0, 1.0],
+    "fadeDuration": 250,
+    "duration": 300,
+  },
+    "cursor": {
+        "hide": true
     },
   "crosshair": {
     "length": 50,
@@ -8,7 +15,7 @@
     "color": [1.0, 0.0, 0.0, 1.0],
     "centerGap": 10,
     "dot": {
-      "enabled": false,
+      "enabled": true,
       "size": 4,
       "color": [0.0, 0.0, 1.0, 1.0]
     }
