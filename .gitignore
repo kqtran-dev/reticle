@@ -1,0 +1,10 @@
+# Compiled app and binaries
+reticle
+reticle.app/
+
+# macOS metadata files
+.DS_Store
+
+# Logs or temporary files
+*.log
+
