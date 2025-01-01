@@ -2,16 +2,12 @@ import Cocoa
 
 class InputHandler {
     static func trackMouse(for crosshairView: CrosshairView) {
-        NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { event in
+        NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDown, .rightMouseDown, .otherMouseDown]) { event in
             crosshairView.updatePosition(to: event.locationInWindow)
         }
 
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged) { event in
+        NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDragged, .rightMouseDragged, .otherMouseDragged]) { event in
             crosshairView.updatePosition(to: event.locationInWindow)
-        }
-
-        NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { event in
-            crosshairView.showClickVisualization(at: event.locationInWindow)
         }
     }
 }
