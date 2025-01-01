@@ -19,7 +19,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var menuBarIcon: MenuBarIcon?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Logger.clearLogFile()
+        Logger.configureLogging(from: "path/to/logging_config.json")
         menuBarIcon = MenuBarIcon()
+
         let configPath = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/reticle/config.json")
         .path
@@ -28,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let screenFrame = NSScreen.main!.frame
 
         // Create transparent overlay window
-        window = WindowFactory.createTransparentWindow(frame: screenFrame)
+        window = WindowFactory.createTransparentWindow()
 
         // Add crosshair view
         crosshairView = CrosshairView(
