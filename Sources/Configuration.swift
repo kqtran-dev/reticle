@@ -8,12 +8,23 @@ struct Configuration: Codable {
             let color: [CGFloat]
         }
 
+        // 1) Define a nested struct for Border.
+        struct Border: Codable {
+            let color: [CGFloat]
+            let thickness: CGFloat
+            let alpha: CGFloat
+        }
+
         let length: CGFloat
         let thickness: CGFloat
         let color: [CGFloat]
         let centerGap: CGFloat
         let dot: Dot
+
+        // 2) New property for border (optional).
+        let border: Border?
     }
+
     struct Cursor: Codable {
         let hide: Bool
     }
@@ -25,7 +36,7 @@ struct Configuration: Codable {
         let duration: TimeInterval
         let fadeDuration: Int // in milliseconds
     }
-    
+
     let runOnStartup: Bool
     let crosshair: Crosshair
     let cursor: Cursor?
@@ -44,9 +55,14 @@ struct Configuration: Codable {
                     enabled: false,
                     size: 5,
                     color: [1.0, 1.0, 1.0, 1.0]
-                )
+                ),
+                border: Crosshair.Border(
+                    color: [1.0, 0.0, 0.0],
+                    thickness: 1.0,
+                    alpha: 1.0
+                )  
             ),
-            cursor: Cursor(hide: false), // Default to not hiding the cursor
+            cursor: Cursor(hide: false),
             onclick: OnClick(
                 enabled: true,
                 size: 20,
@@ -73,4 +89,3 @@ struct Configuration: Codable {
         }
     }
 }
-

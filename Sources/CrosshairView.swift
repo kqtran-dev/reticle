@@ -12,7 +12,12 @@ init(frame frameRect: NSRect, configuration: Configuration.Crosshair?, onclickCo
             thickness: 2,
             color: [1.0, 0.0, 0.0, 1.0],
             centerGap: 5,
-            dot: Configuration.Crosshair.Dot(enabled: false, size: 0, color: [0.0, 0.0, 0.0, 0.0])
+            dot: Configuration.Crosshair.Dot(
+                enabled: false,
+                size: 0,
+                color: [0.0, 0.0, 0.0, 0.0]
+            ),
+            border: nil
         )
         self.clickConfig = onclickConfig
         super.init(frame: frameRect)
@@ -22,42 +27,57 @@ init(frame frameRect: NSRect, configuration: Configuration.Crosshair?, onclickCo
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
+override func draw(_ dirtyRect: NSRect) {
+    super.draw(dirtyRect)
+    NSColor.clear.set()
+    NSBezierPath.fill(bounds)
 
-        // Clear the view
-        NSColor.clear.set()
-        NSBezierPath.fill(bounds)
+    let path = NSBezierPath()
+    path.lineWidth = config.thickness
 
-        // Draw the crosshair
-        let color = NSColor(
-            red: config.color[0],
-            green: config.color[1],
-            blue: config.color[2],
-            alpha: config.color[3]
+    let center = crosshairPosition
+    let gap = config.centerGap
+    let length = config.length
+
+    // Build the crosshair lines
+    // Horizontal
+    path.move(to: CGPoint(x: center.x - length / 2, y: center.y))
+    path.line(to: CGPoint(x: center.x - gap / 2, y: center.y))
+    path.move(to: CGPoint(x: center.x + gap / 2, y: center.y))
+    path.line(to: CGPoint(x: center.x + length / 2, y: center.y))
+
+    // Vertical
+    path.move(to: CGPoint(x: center.x, y: center.y - length / 2))
+    path.line(to: CGPoint(x: center.x, y: center.y - gap / 2))
+    path.move(to: CGPoint(x: center.x, y: center.y + gap / 2))
+    path.line(to: CGPoint(x: center.x, y: center.y + length / 2))
+
+    // 1) Optional border stroke first (if config.border != nil)
+    if let border = config.border {
+        let borderColor = NSColor(
+            red: border.color[0],
+            green: border.color[1],
+            blue: border.color.count > 2 ? border.color[2] : 0.0,
+            alpha: border.alpha
         )
-        color.set()
-        let path = NSBezierPath()
-        path.lineWidth = config.thickness
+        borderColor.set()
 
-        let center = crosshairPosition
-        let gap = config.centerGap
-        let length = config.length
+        // Make a copy of your crosshair path for border
+        if let borderPath = path.copy() as? NSBezierPath {
+            borderPath.lineWidth = config.thickness + 2 * border.thickness
+            borderPath.stroke()
+        }
+    }
 
-        // Horizontal line
-        path.move(to: CGPoint(x: center.x - length / 2, y: center.y))
-        path.line(to: CGPoint(x: center.x - gap / 2, y: center.y))
-        path.move(to: CGPoint(x: center.x + gap / 2, y: center.y))
-        path.line(to: CGPoint(x: center.x + length / 2, y: center.y))
-
-        // Vertical line
-        path.move(to: CGPoint(x: center.x, y: center.y - length / 2))
-        path.line(to: CGPoint(x: center.x, y: center.y - gap / 2))
-        path.move(to: CGPoint(x: center.x, y: center.y + gap / 2))
-        path.line(to: CGPoint(x: center.x, y: center.y + length / 2))
-
-        path.stroke()
-
+    // 2) Main crosshair stroke
+    let mainColor = NSColor(
+        red: config.color[0],
+        green: config.color[1],
+        blue: config.color[2],
+        alpha: config.color[3]
+    )
+    mainColor.set()
+    path.stroke()
         // Draw the onclick visualization AFTER the crosshair
         if let clickPosition = clickPosition, let clickConfig = clickConfig, clickConfig.enabled {
             let clickColor = NSColor(
@@ -127,18 +147,34 @@ init(frame frameRect: NSRect, configuration: Configuration.Crosshair?, onclickCo
         setNeedsDisplay(bounds)  // Refresh view with new configuration
     }
 
+    // func updatePosition(to globalPoint: CGPoint) {
+    //
+    //     // Convert the global point to the window's local coordinates
+    //     let localPoint = convert(globalPoint, from: nil) // Automatically accounts for coordinate flipping
+    //
+    //     // Update crosshair position directly in the local coordinate space
+    //     crosshairPosition = localPoint
+    //     Logger.info("""
+    //
+    //     Cursor Position         (Global): \(globalPoint)
+    //     Local Position (Screen Relative): \(crosshairPosition)
+    // """)
+    //     setNeedsDisplay(bounds)  // Trigger a redraw
+    // }
     func updatePosition(to globalPoint: CGPoint) {
+    guard let window = self.window else { return }
 
-        // Convert the global point to the window's local coordinates
-        let localPoint = convert(globalPoint, from: nil) // Automatically accounts for coordinate flipping
+    // Convert from *screen* (desktop) coordinates to the window’s local coordinate system
+    let localPoint = window.convertPoint(fromScreen: globalPoint)
+    crosshairPosition = localPoint
 
-        // Update crosshair position directly in the local coordinate space
-        crosshairPosition = localPoint
-        Logger.info("""
-        Cursor Position (Global): \(globalPoint)
-        Local Position (Screen Relative): \(crosshairPosition)
+    Logger.info("""
+
+    Cursor Position         (Global): \(globalPoint)
+    Local Position (Screen Relative): \(crosshairPosition)
     """)
-        setNeedsDisplay(bounds)  // Trigger a redraw
-    }
+
+    setNeedsDisplay(bounds)
+}
 }
 

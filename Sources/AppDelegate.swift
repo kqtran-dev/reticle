@@ -27,18 +27,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .appendingPathComponent("Library/Application Support/reticle/config.json")
         .path
         loadConfiguration(from: configPath)
+        Logger.info("Loaded config from: \(configPath)")
+        Logger.info("Loaded border? \(String(describing: configuration?.crosshair.border))")
 
-        let screenFrame = NSScreen.main!.frame
+        // let screenFrame = NSScreen.main!.frame
 
         // Create transparent overlay window
         window = WindowFactory.createTransparentWindow()
 
+        for (index, screen) in NSScreen.screens.enumerated() {
+            Logger.info("Screen \(index): \(screen.frame)")
+        }
+        Logger.info("Final window frame: \(window.frame)")
+
+        let contentRect = window.contentView?.bounds ?? .zero
+
         // Add crosshair view
+        // crosshairView = CrosshairView(
+        //     frame: screenFrame,
+        //     configuration: configuration?.crosshair,
+        //     onclickConfig: configuration?.onclick
+        // )
         crosshairView = CrosshairView(
-            frame: screenFrame,
-            configuration: configuration?.crosshair,
-            onclickConfig: configuration?.onclick
+            frame: contentRect,
+                configuration:configuration?.crosshair,
+                onclickConfig: configuration?.onclick
         )
+
+        window.contentView?.addSubview(crosshairView)
 
         // // Force an initial draw to ensure the crosshair appears immediately
         // crosshairView.setNeedsDisplay(crosshairView.bounds)

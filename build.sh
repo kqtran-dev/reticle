@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm -rf reticle.app
 mkdir -p reticle.app/Contents/MacOS
 mkdir -p reticle.app/Contents/Resources
 mkdir -p ~/Library/Application\ Support/reticle
