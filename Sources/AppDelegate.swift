@@ -20,7 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.clearLogFile()
-        Logger.configureLogging(from: "path/to/logging_config.json")
+        Logger.configureLogging(from: "app_config.json")
         menuBarIcon = MenuBarIcon()
 
         let configPath = FileManager.default.homeDirectoryForCurrentUser

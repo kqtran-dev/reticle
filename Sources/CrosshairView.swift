@@ -65,6 +65,8 @@ override func draw(_ dirtyRect: NSRect) {
         // Make a copy of your crosshair path for border
         if let borderPath = path.copy() as? NSBezierPath {
             borderPath.lineWidth = config.thickness + 2 * border.thickness
+            borderPath.lineCapStyle = .square
+            borderPath.lineJoinStyle = .miter
             borderPath.stroke()
         }
     }
